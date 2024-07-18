@@ -7,8 +7,8 @@
     <h2 class="text-2xl font-bold text-center mb-6">Log in</h2>
     <form @submit.prevent="login">
       <div class="mb-4">
-        <label for="phoneNumber" class="block text-sm font-medium text-gray-700">Phone Number</label>
-        <input type="text" id="phoneNumber" v-model="credentials.phoneNumber" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
+        <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+        <input type="email" id="email" v-model="credentials.email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
       </div>
       <div class="mb-4">
         <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
@@ -34,8 +34,6 @@ import AppHeader from '@/components/AppHeader';
 import AppBanner from '@/components/AppBanner';
 import AppBottom from '@/components/AppBottom';
 import axios from 'axios';
-import CryptoJS from 'crypto-js';
-import JSEncrypt from 'jsencrypt';
 
 export default {
   components: {
@@ -46,41 +44,17 @@ export default {
   data() {
     return {
       credentials: {
-        phoneNumber: '',
+        email: '',
         password: ''
-      },
-      publicKey: ''
-    }
-  },
-  created() {
-    this.fetchPublicKey();
+      }
+    };
   },
   methods: {
-    async fetchPublicKey() {
-      try {
-        const response = await axios.get('http://localhost:8081/api/publicKey');
-        this.publicKey = response.data;
-      } catch (error) {
-        console.error('Error fetching public key:', error);
-      }
-    },
     async login() {
-      // Generate AES key
-      const aesKey = CryptoJS.lib.WordArray.random(16).toString();
-
-      // Encrypt password with AES key
-      const encryptedPassword = CryptoJS.AES.encrypt(this.credentials.password, aesKey).toString();
-
-      // Encrypt AES key with RSA public key
-      const encrypt = new JSEncrypt();
-      encrypt.setPublicKey(this.publicKey);
-      const encryptedAESKey = encrypt.encrypt(aesKey);
-
       try {
         const response = await axios.post('http://localhost:8081/api/users/login', {
-          phoneNumber: this.credentials.phoneNumber,
-          aesKey: encryptedAESKey,
-          password: encryptedPassword
+          email: this.credentials.email,
+          password: this.credentials.password
         });
         console.log('Login successful:', response);
         alert('Login successful');
